@@ -245,18 +245,14 @@ end
 local function validateAll()
     for _, path in ipairs(REQUIRED) do
         local ok, err = pcall(function()
-            compile(path)
+            moduleRequire(nodes[path])
         end)
         if not ok then
             Loader.Diagnostics.Failed[path] = tostring(err)
         end
     end
 
-    if next(Loader.Diagnostics.Failed) then
-        return false
-    end
-
-    return true
+    return next(Loader.Diagnostics.Failed) == nil
 end
 
 Loader.Validate = validateAll
@@ -274,6 +270,11 @@ local ok, result = xpcall(function()
     local api = moduleRequire(nodes[CONFIG.Entry])
     if type(api) ~= "table" then
         error("BinaryUI Loader: entry module did not return a table")
+    end
+
+    api.Loader = Loader
+    api.GetLoaderDiagnostics = function()
+        return Loader.Diagnostics
     end
 
     Loader.Diagnostics.Completed = true

@@ -128,7 +128,19 @@ Node.__index = function(self, key)
         return rawget(self, key)
     end
     local children = rawget(self, "Children")
-    return children and children[key] or nil
+    if children and children[key] then
+        return children[key]
+    end
+
+    if rawget(self, "IsModule") then
+        local parent = rawget(self, "Parent")
+        local siblings = parent and rawget(parent, "Children")
+        if siblings and siblings[key] then
+            return siblings[key]
+        end
+    end
+
+    return nil
 end
 
 local root = setmetatable({
